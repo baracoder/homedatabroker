@@ -55,7 +55,11 @@ public class TibberPulseHttpSource extends AbstractScheduledSource {
 			try {
 				data=SMLDecoder.decode(payload, !ignoreCrcErrors);
 			} catch (Exception ex) {
-				log.warn("Unable to parse SML from response",ex);
+				if (ex.getMessage().contains("wrong crc")) {
+					log.warn("Wrong crc");
+				} else {
+					log.warn("Unable to parse SML from response",ex);
+				}
 				return;
 			}
 			

@@ -50,12 +50,8 @@ public class VictronDbusGridMeterOutput extends AbstractOutput<VictronDbusGridMe
 		return String.format(Locale.ENGLISH,"%,.1f A", value);
 	};
 
-	protected static final Function<Number, Number> NO_SCALE=(value) -> {
-		return value;
-	};
-	protected static final Function<Number, Number> KILO=(value) -> {
-		return value.doubleValue()/1000.0;
-	};
+	protected static final Function<Number, Number> NO_SCALE=(value) -> value;
+	protected static final Function<Number, Number> KILO=(value) -> value.doubleValue()/1000.0;
 	
 	public static enum GridValue {
 		
@@ -117,7 +113,8 @@ public class VictronDbusGridMeterOutput extends AbstractOutput<VictronDbusGridMe
 		for (GridValue gv: GridValue.values()) {
 			ValueHolder vh=new ValueHolder();
 			vh.value = gv.initialValue;
-			vh.variant = new DBusVariant(gv.path,()->vh.value, gv.toStringFunction, gv.scaleFunction);
+			vh.variant = new DBusVariant(gv.path,()-> gv.scaleFunction.apply(vh.value)
+			, gv.toStringFunction);
 			values.put(gv, vh);
 		}
 		
@@ -130,7 +127,7 @@ public class VictronDbusGridMeterOutput extends AbstractOutput<VictronDbusGridMe
 			return;
 		}
 		for (ValueHolder vh: values.values()) {
-			synchronized(vh) {
+			synchronized(this) {
 				ZonedDateTime now=ZonedDateTime.now();
 				if (vh.value!=null && vh.time!=null && vh.time.isBefore(now.minusSeconds(expireAfterSeconds))) {
 					updateValue(vh, now, null);
@@ -142,11 +139,11 @@ public class VictronDbusGridMeterOutput extends AbstractOutput<VictronDbusGridMe
 	protected boolean hasConnectionError=false;
 	
 	@Scheduled(fixedDelay = 30, timeUnit = TimeUnit.SECONDS)
-	protected synchronized boolean tryConnect() {
+	protected synchronized void tryConnect() {
 		
 		if (dbusCon!=null && dbusCon.isConnected()) {
 			hasConnectionError=false;
-			return true;
+			return;
 		}
 		
 		try {
@@ -177,7 +174,6 @@ public class VictronDbusGridMeterOutput extends AbstractOutput<VictronDbusGridMe
 			log.info("Connected connect to {}",dbusUrl);
 			
 			hasConnectionError=false;
-			return true;
 		} catch (DBusException ex) {
 			// reduce log level after the first failure
 			if (hasConnectionError) {
@@ -187,7 +183,6 @@ public class VictronDbusGridMeterOutput extends AbstractOutput<VictronDbusGridMe
 			}
 			
 			hasConnectionError=true;
-			return false;
 		}
 	}
 	
@@ -211,7 +206,7 @@ public class VictronDbusGridMeterOutput extends AbstractOutput<VictronDbusGridMe
 	}
 
 	protected void updateValue(ValueHolder vh, ZonedDateTime time, Number value) {
-		synchronized(vh) {
+		synchronized(this) {
 			vh.time=time;
 			vh.value=value;
 			if (dbusCon!=null && dbusCon.isConnected()) {

@@ -55,7 +55,7 @@ public class SimpleDBusConnectionBuilder extends BaseConnectionBuilder<SimpleDBu
                 }
             }
         } else {
-            c = new DBusConnection(shared, machineId, transportCfg, cfg);
+            c = new DBusConnection(false, machineId, transportCfg, cfg);
         }
 
         c.setDisconnectCallback(getDisconnectCallback());

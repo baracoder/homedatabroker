@@ -19,23 +19,21 @@ public class DBusVariant implements DBusInterface {
 	protected final String path;
 	protected final Supplier<Object> value;
 	protected final Function<Object,String> toStringFunction;
-	protected final Function<Number,Number> scaleFunction;
 
-	public DBusVariant(String path, Supplier<Object> value, Function<Object,String> toStringFunction, Function<Number,Number> scaleFunction) {
+	public DBusVariant(String path, Supplier<Object> value, Function<Object,String> toStringFunction) {
 		this.path = path;
 		this.value = value;
 		this.toStringFunction = toStringFunction!=null?toStringFunction:(v) -> {
 			return v==null?null:v.toString();
 		};
-		this.scaleFunction = scaleFunction;
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public DBusVariant(String path, Object value, Function<Object,String> toStringFunction, Function<Number, Number> scaleFunction) {
-		this(path, (value instanceof Supplier) ? ((Supplier) value) : () -> value, toStringFunction, scaleFunction);
+	public DBusVariant(String path, Object value, Function<Object,String> toStringFunction) {
+		this(path, (value instanceof Supplier) ? ((Supplier) value) : () -> value, toStringFunction);
 	}
 	public DBusVariant(String path, Object value) {
-		this(path, value, null, null);
+		this(path, value, null);
 	}
 
 	@Override
@@ -45,10 +43,7 @@ public class DBusVariant implements DBusInterface {
 	
 	public Variant<?> GetValue() {
 		Object value=this.value.get();
-		if (value instanceof Number n) {
-			return new Variant<>(this.scaleFunction.apply(n));
-		}
-		if (value == null ) {
+		if (value==null) {
 			return new Variant<>(Float.NaN);
 		}
 		return new Variant<>(value);
@@ -66,8 +61,10 @@ public class DBusVariant implements DBusInterface {
 		
 		if (value==null) {
 			value=Float.NaN;
-		} else if (value instanceof Number n) {
-			value= this.scaleFunction.apply(n).doubleValue();
+		}
+		
+		if (value instanceof BigDecimal) {
+			value=((BigDecimal)value).longValue();
 		}
 		
 		changes.put("Value", new Variant<>(value));

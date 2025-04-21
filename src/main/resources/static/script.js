@@ -48,4 +48,4 @@ function renderData(res) {
 
 loadData();
 
-setInterval(loadData, 5000);
+setInterval(loadData, 1000);

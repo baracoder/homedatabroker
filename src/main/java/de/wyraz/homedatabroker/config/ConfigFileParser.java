@@ -6,9 +6,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.time.DateTimeException;
 import java.time.Duration;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -22,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.convert.DurationStyle;
-import org.springframework.boot.convert.PeriodFormat;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.util.ReflectionUtils;
@@ -37,19 +34,8 @@ import org.yaml.snakeyaml.parser.ParserImpl;
 import org.yaml.snakeyaml.reader.StreamReader;
 import org.yaml.snakeyaml.resolver.Resolver;
 
-import de.wyraz.homedatabroker.output.ConsoleOutput;
-import de.wyraz.homedatabroker.output.MQTTOutput;
-import de.wyraz.homedatabroker.output.OpenMetricsPushOutput;
 import de.wyraz.homedatabroker.output.VictronDbusGridMeterOutput;
-import de.wyraz.homedatabroker.output.VictronMQTTGridMeterOutput;
-import de.wyraz.homedatabroker.source.AggregationSource;
-import de.wyraz.homedatabroker.source.DummySource;
-import de.wyraz.homedatabroker.source.MQTTSource;
-import de.wyraz.homedatabroker.source.ModBusIPSource;
-import de.wyraz.homedatabroker.source.SerialSMLSource;
 import de.wyraz.homedatabroker.source.TibberPulseHttpSource;
-import de.wyraz.homedatabroker.source.VictronDBusSource;
-import de.wyraz.homedatabroker.util.connection.ModBusIPConnectionManager.IpProtocol;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -65,23 +51,12 @@ public class ConfigFileParser implements ApplicationContextInitializer<Configura
 
 	protected static Map<String, Supplier<AbstractComponent>> SOURCE_TYPES = new HashMap<>();
 	static {
-		SOURCE_TYPES.put("dummy", () -> new DummySource());
-		SOURCE_TYPES.put("mqtt", () -> new MQTTSource());
-		SOURCE_TYPES.put("modbus-tcp", () -> new ModBusIPSource(IpProtocol.TCP));
-		SOURCE_TYPES.put("modbus-udp", () -> new ModBusIPSource(IpProtocol.UDP));
 		SOURCE_TYPES.put("tibber-pulse-http", () -> new TibberPulseHttpSource());
-		SOURCE_TYPES.put("victron-dbus", () -> new VictronDBusSource());
-		SOURCE_TYPES.put("sml-serial", () -> new SerialSMLSource());
-		SOURCE_TYPES.put("aggregation", () -> new AggregationSource());
 	}
 
 	protected static Map<String, Supplier<AbstractComponent>> OUTPUT_TYPES = new HashMap<>();
 	static {
-		OUTPUT_TYPES.put("console", () -> new ConsoleOutput());
-		OUTPUT_TYPES.put("mqtt", () -> new MQTTOutput());
-		OUTPUT_TYPES.put("openmetrics", () -> new OpenMetricsPushOutput());
 		OUTPUT_TYPES.put("victron-dbus-gridmeter", () -> new VictronDbusGridMeterOutput());
-		OUTPUT_TYPES.put("victron-mqtt-gridmeter", () -> new VictronMQTTGridMeterOutput());
 	}
 
 	public static String getNodeType(Node node) {
