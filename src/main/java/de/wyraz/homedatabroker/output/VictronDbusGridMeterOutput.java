@@ -60,17 +60,17 @@ public class VictronDbusGridMeterOutput extends AbstractOutput<VictronDbusGridMe
 	public static enum GridValue {
 		
 		// Energy requires unit conversion (Wh -> kWh)
-		//AC_ENERGY_FORWARD("/Ac/Energy/Forward",null, STR_WATT, KILO),
-		//AC_ENERGY_REVERSE("/Ac/Energy/Reverse",null, STR_WATT, KILO),
+		AC_ENERGY_FORWARD("/Ac/Energy/Forward",null, STR_WATT, KILO),
+		AC_ENERGY_REVERSE("/Ac/Energy/Reverse",null, STR_WATT, KILO),
 
 		AC_L1_ENERGY_FORWARD("/Ac/L1/Energy/Forward",null, STR_WATT, KILO),
 		AC_L1_ENERGY_REVERSE("/Ac/L1/Energy/Reverse",null, STR_WATT, KILO),
 		
 		
-		//AC_POWER("/Ac/Power",null,STR_WATT, NO_SCALE),
+		AC_POWER("/Ac/Power",null,STR_WATT, NO_SCALE),
 		
-		AC_L1_VOLTAGE("/Ac/L1/Voltage",null,STR_VOLT, NO_SCALE),
-		AC_L1_CURRENT("/Ac/L1/Current",null,STR_AMPERE, NO_SCALE),
+		//AC_L1_VOLTAGE("/Ac/L1/Voltage",null,STR_VOLT, NO_SCALE),
+		//AC_L1_CURRENT("/Ac/L1/Current",null,STR_AMPERE, NO_SCALE),
 		AC_L1_POWER("/Ac/L1/Power",null,STR_WATT, NO_SCALE),
 		
 		//AC_L2_VOLTAGE("/Ac/L2/Voltage",null,STR_VOLT, NO_SCALE),
