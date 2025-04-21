@@ -66,9 +66,7 @@ public class DBusVariant implements DBusInterface {
 		
 		if (value==null) {
 			value=Float.NaN;
-		}
-		
-		if (value instanceof Number n) {
+		} else if (value instanceof Number n) {
 			value= this.scaleFunction.apply(n).doubleValue();
 		}
 		
