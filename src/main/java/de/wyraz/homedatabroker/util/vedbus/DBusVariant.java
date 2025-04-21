@@ -19,21 +19,23 @@ public class DBusVariant implements DBusInterface {
 	protected final String path;
 	protected final Supplier<Object> value;
 	protected final Function<Object,String> toStringFunction;
+	protected final Function<Number,Number> scaleFunction;
 
-	public DBusVariant(String path, Supplier<Object> value, Function<Object,String> toStringFunction) {
+	public DBusVariant(String path, Supplier<Object> value, Function<Object,String> toStringFunction, Function<Number,Number> scaleFunction) {
 		this.path = path;
 		this.value = value;
 		this.toStringFunction = toStringFunction!=null?toStringFunction:(v) -> {
 			return v==null?null:v.toString();
 		};
+		this.scaleFunction = scaleFunction;
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public DBusVariant(String path, Object value, Function<Object,String> toStringFunction) {
-		this(path, (value instanceof Supplier) ? ((Supplier) value) : () -> value, toStringFunction);
+	public DBusVariant(String path, Object value, Function<Object,String> toStringFunction, Function<Number, Number> scaleFunction) {
+		this(path, (value instanceof Supplier) ? ((Supplier) value) : () -> value, toStringFunction, scaleFunction);
 	}
 	public DBusVariant(String path, Object value) {
-		this(path, value, null);
+		this(path, value, null, null);
 	}
 
 	@Override
@@ -43,7 +45,10 @@ public class DBusVariant implements DBusInterface {
 	
 	public Variant<?> GetValue() {
 		Object value=this.value.get();
-		if (value==null) {
+		if (value instanceof Number n) {
+			return new Variant<>(this.scaleFunction.apply(n));
+		}
+		if (value == null ) {
 			return new Variant<>(Float.NaN);
 		}
 		return new Variant<>(value);
@@ -63,8 +68,8 @@ public class DBusVariant implements DBusInterface {
 			value=Float.NaN;
 		}
 		
-		if (value instanceof BigDecimal) {
-			value=((BigDecimal)value).longValue();
+		if (value instanceof Number n) {
+			value= this.scaleFunction.apply(n).doubleValue();
 		}
 		
 		changes.put("Value", new Variant<>(value));

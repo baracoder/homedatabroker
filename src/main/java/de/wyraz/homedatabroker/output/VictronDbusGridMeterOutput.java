@@ -49,37 +49,46 @@ public class VictronDbusGridMeterOutput extends AbstractOutput<VictronDbusGridMe
 		if (value==null) return null;
 		return String.format(Locale.ENGLISH,"%,.1f A", value);
 	};
+
+	protected static final Function<Number, Number> NO_SCALE=(value) -> {
+		return value;
+	};
+	protected static final Function<Number, Number> KILO=(value) -> {
+		return value.doubleValue()/1000.0;
+	};
 	
 	public static enum GridValue {
 		
-		// TODO: Energy requires unit conversion (Wh -> kWh)
-		//AC_ENERGY_FORWARD("/Ac/Energy/Forward",null),
-		//AC_ENERGY_REVERSE("/Ac/Energy/Forward",null),
+		// Energy requires unit conversion (Wh -> kWh)
+		AC_ENERGY_FORWARD("/Ac/Energy/Forward",null, STR_WATT, KILO),
+		AC_ENERGY_REVERSE("/Ac/Energy/Reverse",null, STR_WATT, KILO),
 		
 		
-		AC_POWER("/Ac/Power",null,STR_WATT),
+		AC_POWER("/Ac/Power",null,STR_WATT, NO_SCALE),
 		
-		AC_L1_VOLTAGE("/Ac/L1/Voltage",null,STR_VOLT),
-		AC_L1_CURRENT("/Ac/L1/Current",null,STR_AMPERE),
-		AC_L1_POWER("/Ac/L1/Power",null,STR_WATT),
+		AC_L1_VOLTAGE("/Ac/L1/Voltage",null,STR_VOLT, NO_SCALE),
+		AC_L1_CURRENT("/Ac/L1/Current",null,STR_AMPERE, NO_SCALE),
+		AC_L1_POWER("/Ac/L1/Power",null,STR_WATT, NO_SCALE),
 		
-		AC_L2_VOLTAGE("/Ac/L2/Voltage",null,STR_VOLT),
-		AC_L2_CURRENT("/Ac/L2/Current",null,STR_AMPERE),
-		AC_L2_POWER("/Ac/L2/Power",null,STR_WATT),
+		AC_L2_VOLTAGE("/Ac/L2/Voltage",null,STR_VOLT, NO_SCALE),
+		AC_L2_CURRENT("/Ac/L2/Current",null,STR_AMPERE, NO_SCALE),
+		AC_L2_POWER("/Ac/L2/Power",null,STR_WATT, NO_SCALE),
 
-		AC_L3_VOLTAGE("/Ac/L3/Voltage",null,STR_VOLT),
-		AC_L3_CURRENT("/Ac/L3/Current",null,STR_AMPERE),
-		AC_L3_POWER("/Ac/L3/Power",null,STR_WATT),
+		AC_L3_VOLTAGE("/Ac/L3/Voltage",null,STR_VOLT, NO_SCALE),
+		AC_L3_CURRENT("/Ac/L3/Current",null,STR_AMPERE, NO_SCALE),
+		AC_L3_POWER("/Ac/L3/Power",null,STR_WATT, NO_SCALE),
 		;
 		
 		protected final String path;
 		protected final Number initialValue;
 		protected final Function<Object, String> toStringFunction;
+		protected final Function<Number, Number> scaleFunction;
 		
-		private GridValue(String path, Number initialValue, Function<Object, String> toStringFunction) {
+		private GridValue(String path, Number initialValue, Function<Object, String> toStringFunction, Function<Number,Number> scaleFunction) {
 			this.path = path;
 			this.initialValue = initialValue;
 			this.toStringFunction = toStringFunction;
+			this.scaleFunction = scaleFunction;
 		}
 	}
 
@@ -105,7 +114,7 @@ public class VictronDbusGridMeterOutput extends AbstractOutput<VictronDbusGridMe
 		for (GridValue gv: GridValue.values()) {
 			ValueHolder vh=new ValueHolder();
 			vh.value = gv.initialValue;
-			vh.variant = new DBusVariant(gv.path,()->vh.value, gv.toStringFunction);
+			vh.variant = new DBusVariant(gv.path,()->vh.value, gv.toStringFunction, gv.scaleFunction);
 			values.put(gv, vh);
 		}
 		
