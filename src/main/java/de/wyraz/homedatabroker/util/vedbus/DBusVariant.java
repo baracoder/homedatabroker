@@ -57,8 +57,11 @@ public class DBusVariant implements DBusInterface {
 	@DBusIgnore
 	public PropertiesChanged toPropertiesChangedSignal() throws DBusException {
 		Map<String,Variant<?>> changes=new HashMap<>();
-		Object value=this.value.get();
-		
+		Object value = null;
+		if (this.value != null) {
+			value=this.value.get();
+		}
+
 		if (value==null) {
 			value=Float.NaN;
 		}
