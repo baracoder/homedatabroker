@@ -113,7 +113,7 @@ public class VictronDbusGridMeterOutput extends AbstractOutput<VictronDbusGridMe
 		for (GridValue gv: GridValue.values()) {
 			ValueHolder vh=new ValueHolder();
 			vh.value = gv.initialValue;
-			vh.variant = new DBusVariant(gv.path,()-> gv.scaleFunction.apply(vh.value)
+			vh.variant = new DBusVariant(gv.path,()-> (vh.value != null ? gv.scaleFunction.apply(vh.value) : Double.NaN )
 			, gv.toStringFunction);
 			values.put(gv, vh);
 		}
